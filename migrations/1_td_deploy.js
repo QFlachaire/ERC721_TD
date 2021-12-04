@@ -3,6 +3,7 @@ const Str = require('@supercharge/strings')
 
 var TDErc20 = artifacts.require("ERC20TD.sol");
 var evaluator = artifacts.require("Evaluator.sol");
+var ExerciceSolution = artifacts.require("ExerciceSolution.sol");
 
 
 module.exports = (deployer, network, accounts) => {
@@ -11,6 +12,7 @@ module.exports = (deployer, network, accounts) => {
         await deployEvaluator(deployer, network, accounts); 
         await setPermissionsAndRandomValues(deployer, network, accounts); 
         await deployRecap(deployer, network, accounts); 
+		await deployExs(deployer, network, accounts);
     });
 };
 
@@ -51,5 +53,16 @@ async function deployRecap(deployer, network, accounts) {
 	console.log("TDToken " + TDToken.address)
 	console.log("Evaluator " + Evaluator.address)
 }
+async function deployExs(deployer, network, accounts) {
 
+	solution = await ExerciceSolution.new("WoWW", "WoWW")
+	solution.mint(Evaluator.address, 1)
+	
+	await Evaluator.submitExercice(solution.address)
+	await Evaluator.ex1_testERC721();
+
+	getBalance = await TDToken.balanceOf(accounts[0]);
+	console.log("Ex1 Balance " + getBalance.toString());
+
+}
 

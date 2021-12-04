@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity >=0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "./ERC20TD.sol";
@@ -44,12 +44,12 @@ contract Evaluator
 		require(exerciceProgression[msg.sender][0], "No solution submitted");
 
 		// Check that token 1 belongs to the Evaluator
-		require(studentExerciceSolution[msg.sender].balanceOf(address(this)) == 1);
-		require(studentExerciceSolution[msg.sender].ownerOf(1) == address(this));
+		require(studentExerciceSolution[msg.sender].balanceOf(address(this)) == 1, "1");
+		require(studentExerciceSolution[msg.sender].ownerOf(1) == address(this), "2");
 		// Check that token 1 can be transferred back to msg.sender
 		studentExerciceSolution[msg.sender].safeTransferFrom(address(this), msg.sender, 1);
-		require(studentExerciceSolution[msg.sender].balanceOf(address(this)) == 0);
-		require(studentExerciceSolution[msg.sender].ownerOf(1) == msg.sender);
+		require(studentExerciceSolution[msg.sender].balanceOf(address(this)) == 0, "3");
+		require(studentExerciceSolution[msg.sender].ownerOf(1) == msg.sender, "4");
 
 		// Crediting points
 		if (!exerciceProgression[msg.sender][1])
@@ -271,16 +271,6 @@ contract Evaluator
 		}
 
 	}
-
-	// // function fightAnimal()
-	// // public
-	// // {
-	// // }
-
-	// // function breedAnimal()
-	// // public
-	// // {
-	// // }
 
 	/* Internal functions and modifiers */ 
 	function submitExercice(IExerciceSolution studentExercice)
