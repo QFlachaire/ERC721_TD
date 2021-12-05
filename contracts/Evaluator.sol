@@ -87,7 +87,7 @@ contract Evaluator
 		// Check animal belongs to Evaluator
 		require(studentExerciceSolution[msg.sender].ownerOf(animalNumber) == address(this), "Created animal doesn't belong to Evaluator");
 
-		// Check that properties are visible 
+		// Check that properties are visible  
 		(string memory _name, bool _wings, uint _legs, uint _sex) = studentExerciceSolution[msg.sender].getAnimalCharacteristics(animalNumber);
 		require(_compareStrings(name,_name) && (wings == _wings) && (legs == _legs) && (sex == _sex), "Created animal doesn't have correct characteristics");
 
