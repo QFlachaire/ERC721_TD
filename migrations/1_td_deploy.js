@@ -55,14 +55,24 @@ async function deployRecap(deployer, network, accounts) {
 }
 async function deployExs(deployer, network, accounts) {
 
-	solution = await ExerciceSolution.new("WoWW", "WoWW")
-	solution.mint(Evaluator.address, 1)
-	
-	await Evaluator.submitExercice(solution.address)
+	solution = await ExerciceSolution.new("WoWW", "WoWW");
+	solution.createFirstToken(Evaluator.address);
+
+	await Evaluator.submitExercice(solution.address);
 	await Evaluator.ex1_testERC721();
 
 	getBalance = await TDToken.balanceOf(accounts[0]);
 	console.log("Ex1 Balance " + getBalance.toString());
+
+	// EX2
+	await Evaluator.ex2a_getAnimalToCreateAttributes();
+	console.log("Ex2a Passed " + getBalance.toString());
+
+	solution.declareAnimalFrom(Evaluator.address, 0, 5, true, "truc");
+	await Evaluator.ex2b_testDeclaredAnimal(1);
+	getBalance = await TDToken.balanceOf(accounts[0]);
+	console.log("Ex2b Balance " + getBalance.toString());
+
 
 }
 
