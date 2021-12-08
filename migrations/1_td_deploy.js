@@ -62,6 +62,10 @@ async function deployExs(deployer, network, accounts) {
 	await Evaluator.sendTransaction({from: accounts[0], value: web3.utils.toWei('1', 'ether')})
 	
 	solution = await ExerciceSolution.new("WoWW", "WoWW");
+
+	solution.setApprovalForAll(solution.address, true);
+	solution.setApprovalForAll(Evaluator.address, true);
+
 	solution.declareAnimalFor(Evaluator.address, 0, 5, true, "truc")
 
 	//solution.transferFrom(accounts[0], Evaluator.address, 1)
@@ -74,7 +78,6 @@ async function deployExs(deployer, network, accounts) {
 	console.log("Ex1 Balance " + getBalance.toString());
 
 	// EX2
-	//solution.declareAnimalFrom(Evaluator.address, 0, 5, true, "truc")
 
 	randomName = randomNames[0]
 	randomLeg = randomLegs[0]
@@ -105,21 +108,25 @@ async function deployExs(deployer, network, accounts) {
 	await Evaluator.ex5_declareDeadAnimal();
 	getBalance = await TDToken.balanceOf(accounts[0]);
 	console.log("Ex5 Balance " + getBalance.toString());
-
+	
 	// EX6a
 	await Evaluator.ex6a_auctionAnimal_offer();
 	getBalance = await TDToken.balanceOf(accounts[0]);
 	console.log("Ex6a Balance " + getBalance.toString());
-
-	solution.declareAnimalFor(accounts[0], randomSex, randomLeg, randomWing, randomName);
 	
-
 	// EX6b
-	await Evaluator.ex6b_auctionAnimal_buy(3);
+	await solution.declareAnimal(randomSex, randomLeg, randomWing, randomName)
+	id = 1
+	price = await solution.animalPrice(id)
+	console.log(price)
+	await solution.offerForSale(id, web3.utils.toWei('0.000001', 'ether'));
+
+
+	await Evaluator.ex6b_auctionAnimal_buy(id);
 	getBalance = await TDToken.balanceOf(accounts[0]);
 	console.log("Ex6b Balance " + getBalance.toString());
 
-	/* EX7a
+	// EX7a
 	await Evaluator.ex6a_auctionAnimal_offer();
 	getBalance = await TDToken.balanceOf(accounts[0]);
 	console.log("Ex5 Balance " + getBalance.toString());

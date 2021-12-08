@@ -206,7 +206,6 @@ contract Evaluator
 		// Offer an animal for sale. Evaluator must hold at least one animal.
 		// Getting an animal id of Evaluator
 		uint animalNumber = studentExerciceSolution[msg.sender].tokenOfOwnerByIndex(address(this), 0);
-
 		// Testing that animal is not for sale yet
 		require(!studentExerciceSolution[msg.sender].isAnimalForSale(animalNumber), "Animal not for sale yet" );
 		require(studentExerciceSolution[msg.sender].animalPrice(animalNumber) == 0, "Animal as not been auctionned yet");

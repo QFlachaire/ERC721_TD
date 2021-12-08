@@ -16,23 +16,30 @@ contract ExerciceSolution is ERC721 {
         string name;
         bool isForSale;
         uint price;
+        uint parent1;
+        uint parent2;
     }
     mapping(uint256 => animals) public animalCharacteristic;
-    mapping(address => uint256) public registerBreeder;
+    mapping(address => uint256) public registeredBreeder;
 
-    modifier onlyAnimalBreeder(uint256 animalId) { 
-        require (registerBreeder[msg.sender] == animalId);
+    modifier onlyAnimalBreeder(uint256 animalNumber) { 
+        require (ownerOf(animalNumber) == msg.sender);
         _;
     }
 
-    modifier onlyAnimalForSale(uint256 animalId) { 
-        require (animalCharacteristic[animalId].isForSale == true);
+    modifier onlyAnimalForSale(uint256 animalNumber) { 
+        require (animalCharacteristic[animalNumber].isForSale == true);
         _;
+    }
+
+    function getCurrentId() external view returns (uint256) 
+    {
+        return _tokenIds.current();
     }
 
 	function isBreeder(address account) external returns (bool)
     {
-        if (registerBreeder[account] == 1){
+        if (registeredBreeder[account] == 1){
             return true;
         }
         return false;
@@ -45,7 +52,7 @@ contract ExerciceSolution is ERC721 {
 
 	function registerMeAsBreeder() external payable
     {   
-        registerBreeder[msg.sender] = 1;
+        registeredBreeder[msg.sender] = 1;
     }
 
 	function declareAnimalFor(address to,uint sex, uint legs, bool wings, string calldata name) external returns (uint256)
@@ -61,7 +68,6 @@ contract ExerciceSolution is ERC721 {
         return newItemId;
     }
 
-
 	function declareAnimal(uint sex, uint legs, bool wings, string calldata name) external returns (uint256)
     {
         
@@ -75,7 +81,6 @@ contract ExerciceSolution is ERC721 {
         return newItemId;
     }
 
-
 	function getAnimalCharacteristics(uint animalNumber) external returns (string memory _name, bool _wings, uint _legs, uint _sex)
     {
         uint sex = animalCharacteristic[animalNumber].sex;
@@ -85,9 +90,9 @@ contract ExerciceSolution is ERC721 {
         return (name, wings, legs, sex);
     }
 
-    function declareDeadAnimal(uint animalNumber) external onlyAnimalBreeder(1){
+    function declareDeadAnimal(uint animalNumber) external onlyAnimalBreeder(animalNumber)
+    {
         _burn(animalNumber);
-        registerBreeder[msg.sender] = 0;
         delete animalCharacteristic[animalNumber];
     }
 
@@ -99,21 +104,32 @@ contract ExerciceSolution is ERC721 {
         return animalCharacteristic[animalNumber].isForSale;
     }
 
-	function animalPrice(uint animalNumber) external view returns (uint256)
+	function animalPrice(uint animalNumber) external view returns (uint)
     {
         return animalCharacteristic[animalNumber].price;
     }
 
 	function buyAnimal(uint animalNumber) external payable onlyAnimalForSale(animalNumber)
     {
-        
+        require(msg.value >= animalCharacteristic[animalNumber].price);
+        _transfer(ownerOf(animalNumber), msg.sender, animalNumber);
+
+        animalCharacteristic[animalNumber].isForSale = false;
+        animalCharacteristic[animalNumber].price = 0;
     }
 
-	function offerForSale(uint animalNumber, uint price) external
+	function offerForSale(uint animalNumber, uint price) external onlyAnimalBreeder(animalNumber)
     {
         animalCharacteristic[animalNumber].isForSale = true;
         animalCharacteristic[animalNumber].price = price;
     }
+
+	function approve2(uint animalNumber, address buyer) external onlyAnimalBreeder(animalNumber)
+    {
+        approve(buyer, animalNumber);
+    }
+
+
 
     
     // Reproduction functions
