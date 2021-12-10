@@ -21,6 +21,7 @@ contract ExerciceSolution is ERC721 {
         uint reproductionPrice;
         address authorizedBreeder;
     }
+    
     mapping(uint256 => animals) public animalCharacteristic;
     mapping(address => uint256) public registeredBreeder;
 

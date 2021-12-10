@@ -7,7 +7,7 @@ var evaluator = artifacts.require("Evaluator.sol");
 var evaluator2 = artifacts.require("Evaluator2.sol");
 var ExerciceSolution = artifacts.require("ExerciceSolution.sol");
 
-const network = "rinkeby"
+const network = "ganache"
 
 module.exports = (deployer, network, accounts) => {
     deployer.then(async () => {
@@ -30,7 +30,7 @@ module.exports = (deployer, network, accounts) => {
 async function hardcodeContractAddress(deployer, network, accounts) {
 	TDToken = await TDErc20.at("0x8B7441Cb0449c71B09B96199cCE660635dE49A1D")
 	Evaluator = await evaluator.at("0xa0b9f62A0dC5cCc21cfB71BA70070C3E1C66510E")
-	Evaluator2 = await evaluator.at("0x4f82f7A130821F61931C7675A40fab723b70d1B8")
+	Evaluator2 = await evaluator2.at("0x4f82f7A130821F61931C7675A40fab723b70d1B8")
 
 }
 
@@ -90,7 +90,7 @@ async function deployExs(deployer, network, accounts) {
 
 	// EX1
 	await Solution.declareAnimalFor(Evaluator.address, 0, 5, true, "ouooo");
-	/*anim1 = await Solution.getCurrentId();
+	anim1 = await Solution.getCurrentId();
 
 	await Evaluator.ex1_testERC721();
 	getBalance = await TDToken.balanceOf(accounts[0]);
@@ -135,14 +135,9 @@ async function deployExs(deployer, network, accounts) {
 	await Evaluator.ex6a_auctionAnimal_offer();
 	getBalance = await TDToken.balanceOf(accounts[0]);
 	console.log("Ex6a Balance " + getBalance.toString());
-	*/
+	
 	// EX6b
 
-
-	const Name = await Evaluator.readName(accounts[0]);
-	const Legs = await Evaluator.readLegs(accounts[0]);
-	const Sex = await Evaluator.readSex(accounts[0]);
-	const Wing = await Evaluator.readWings(accounts[0]);
 	await Solution.declareAnimal(Sex, Legs, Wing, Name)
 	price6b = await Solution.getCurrentId();
 
@@ -150,8 +145,8 @@ async function deployExs(deployer, network, accounts) {
 	await Solution.offerForSale(price6b, web3.utils.toWei('0.000001', 'ether'));
 
 	await Evaluator.ex6b_auctionAnimal_buy(price6b);
-	//getBalance = await TDToken.balanceOf(accounts[0]);
-	//console.log("Ex6b Balance " + getBalance.toString());
+	getBalance = await TDToken.balanceOf(accounts[0]);
+	console.log("Ex6b Balance " + getBalance.toString());
 	
 
 	// EX7
@@ -166,13 +161,11 @@ async function deployExs(deployer, network, accounts) {
 	await Solution.declareAnimalFor(accounts[0], Sex, Legs, Wing, Name);
 
 	// EX7a
-	console.log("ouoo")
 	await Solution.declareAnimalFor(Evaluator2.address, Sex, Legs, Wing, Name)
 	parent1 = await Solution.getCurrentId();
-	console.log("ouoo")
+
 	await Solution.declareAnimalFor(Evaluator2.address, Sex, Legs, Wing, Name)
 	parent2 = await Solution.getCurrentId();
-	console.log("ouoo")
 
 	await Evaluator2.ex7a_breedAnimalWithParents(parent1, parent2, {from: accounts[0]});
 	getBalance = await TDToken.balanceOf(accounts[0]);
