@@ -18,6 +18,8 @@ contract ExerciceSolution is ERC721 {
         uint price;
         uint parent1;
         uint parent2;
+        uint reproductionPrice;
+        address authorizedBreeder;
     }
     mapping(uint256 => animals) public animalCharacteristic;
     mapping(address => uint256) public registeredBreeder;
@@ -30,6 +32,18 @@ contract ExerciceSolution is ERC721 {
     modifier onlyAnimalForSale(uint256 animalNumber) { 
         require (animalCharacteristic[animalNumber].isForSale == true);
         _;
+    }
+
+    modifier onlyAuthorizedBreederAndOwner(uint256 parent1, uint256 parent2) { 
+        require ((animalCharacteristic[parent1].authorizedBreeder == msg.sender) || ownerOf(parent1) == msg.sender);
+        require ((animalCharacteristic[parent2].authorizedBreeder == msg.sender) || ownerOf(parent2) == msg.sender);
+        _;
+    }
+
+    function myMint(address to) public 
+    {
+        _tokenIds.increment();
+        _mint(to, _tokenIds.current());
     }
 
     function getCurrentId() external view returns (uint256) 
@@ -55,6 +69,11 @@ contract ExerciceSolution is ERC721 {
         registeredBreeder[msg.sender] = 1;
     }
 
+    function registerAsBreeder(address to) external payable
+    {   
+        registeredBreeder[to] = 1;
+    }
+
 	function declareAnimalFor(address to,uint sex, uint legs, bool wings, string calldata name) external returns (uint256)
     {
         
@@ -62,7 +81,7 @@ contract ExerciceSolution is ERC721 {
         uint256 newItemId = _tokenIds.current();
         _mint(to, newItemId);
 
-        animals memory newAnimal = animals(sex, legs, wings, name, false, 0);
+        animals memory newAnimal = animals(sex, legs, wings, name, false, 0, 0, 0, 0, msg.sender);
         animalCharacteristic[newItemId] = newAnimal;
 
         return newItemId;
@@ -75,7 +94,7 @@ contract ExerciceSolution is ERC721 {
         uint256 newItemId = _tokenIds.current();
         _mint(msg.sender, newItemId);
 
-        animals memory newAnimal = animals(sex, legs, wings, name, false, 0);
+        animals memory newAnimal = animals(sex, legs, wings, name, false, 0, 0, 0, 0, msg.sender);
         animalCharacteristic[newItemId] = newAnimal;
 
         return newItemId;
@@ -124,27 +143,56 @@ contract ExerciceSolution is ERC721 {
         animalCharacteristic[animalNumber].price = price;
     }
 
-	function approve2(uint animalNumber, address buyer) external onlyAnimalBreeder(animalNumber)
+
+    // Reproduction functions
+
+    function declareAnimalWithParents(uint sex, uint legs, bool wings, string calldata name, uint parent1, uint parent2) external  returns (uint256)
     {
-        approve(buyer, animalNumber);
+        require (animalCharacteristic[parent1].authorizedBreeder == msg.sender || ownerOf(parent1) == msg.sender, "Parent1 bug.");
+        require (animalCharacteristic[parent2].authorizedBreeder == msg.sender || ownerOf(parent2) == msg.sender, "Parent2 bug.");
+
+        _tokenIds.increment();
+        uint256 newItemId = _tokenIds.current();
+        _mint(msg.sender, newItemId);
+
+        animals memory newAnimal = animals(sex, legs, wings, name, false, 0, parent1, parent2, 0, msg.sender);
+        animalCharacteristic[newItemId] = newAnimal;
+
+        animalCharacteristic[parent1].authorizedBreeder = address(0);
+        animalCharacteristic[parent2].authorizedBreeder = address(0);
+
+        return newItemId;
+    }
+    
+	function getParents(uint animalNumber) external view returns (uint256, uint256)
+    {
+        return (animalCharacteristic[animalNumber].parent1, animalCharacteristic[animalNumber].parent2);
     }
 
 
+	function canReproduce(uint animalNumber) external returns (bool)
+    {
+        return animalCharacteristic[animalNumber].reproductionPrice != 0;
+    }
 
-    
-    // Reproduction functions
+	function reproductionPrice(uint animalNumber) external view returns (uint256)
+    {
+        return animalCharacteristic[animalNumber].reproductionPrice;
+    }
 
-    //function declareAnimalWithParents(uint sex, uint legs, bool wings, string calldata name, uint parent1, uint parent2) external returns (uint256);
+	function offerForReproduction(uint animalNumber, uint reproductionPrice) external onlyAnimalBreeder(animalNumber) returns (uint256) 
+    {
+        animalCharacteristic[animalNumber].reproductionPrice = reproductionPrice;
+    }
 
-	//function getParents(uint animalNumber) external returns (uint256, uint256);
+	function authorizedBreederToReproduce(uint animalNumber) external view returns (address)
+    {
+        return animalCharacteristic[animalNumber].authorizedBreeder;
+    }
 
-	//function canReproduce(uint animalNumber) external returns (bool);
-
-	//function reproductionPrice(uint animalNumber) external view returns (uint256);
-
-	//function offerForReproduction(uint animalNumber, uint priceOfReproduction) external returns (uint256);
-
-	//function authorizedBreederToReproduce(uint animalNumber) external returns (address);
-
-	//function payForReproduction(uint animalNumber) external payable;
+	function payForReproduction(uint animalNumber) external payable
+    {
+        require(msg.value >= animalCharacteristic[animalNumber].reproductionPrice, "Pls consider the price.");
+        animalCharacteristic[animalNumber].authorizedBreeder = msg.sender;
+    }
 }
